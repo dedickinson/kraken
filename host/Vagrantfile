@@ -1,0 +1,28 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  
+  config.vm.box = "bento/ubuntu-18.04"
+
+  config.vm.provider "hyperv" do |h|
+    h.vmname = "kraken"
+    h.memory = 4096
+
+    config.vm.network "public_network"
+    config.vm.synced_folder ".", "/vagrant", type: "smb", disabled: true
+
+    h.vm_integration_services = {
+      guest_service_interface: true
+    }
+  end
+
+  config.vm.provision "shell", inline: "apt update"
+  config.vm.provision "shell", inline: "apt upgrade -y --with-new-pkgs"
+
+  config.vm.provision "shell", inline: "hostnamectl set-hostname kraken"
+  
+  config.vm.provision :docker
+  config.vm.provision :docker_compose
+
+end
