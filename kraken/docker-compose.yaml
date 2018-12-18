@@ -1,0 +1,56 @@
+version: "3.5"
+
+services:
+  postgres:
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    expose: 
+      - "5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks: 
+      - backend
+  
+  proxy:
+    build:
+      context: ./frontenvoy
+    image: frontenvoy:latest 
+    volumes:
+      - ./frontenvoy/front-envoy.yaml:/etc/front-envoy.yaml
+    expose:
+      - "80"
+      - "8001"
+    ports:
+      - "80:80"
+      - "8001:8001"
+    networks:
+      - frontend
+      - dmz
+
+  web:
+    build:
+      context: ./web
+    image: webenvoy:latest
+    expose:
+      - "80"
+    environment:
+      - SERVICE_NAME=web
+    volumes:
+      - ./web/service-envoy.yaml:/etc/service-envoy.yaml
+      - ./web/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./web/nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf
+      - ./web/site/build:/var/lib/nginx/html
+    networks:
+      dmz:
+        aliases:
+          - web
+
+networks:
+  backend: {}
+  frontend: {}
+  dmz: {}
+
+volumes:
+  postgres-data: {}

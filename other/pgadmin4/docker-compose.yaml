@@ -6,13 +6,15 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@localhost
       PGADMIN_DEFAULT_PASSWORD: password
-    ports: 
-      - "38080:80"
+    expose: 
+      - "80"
+    ports:
+      - "5432:80"
     networks: 
-      - kraken
+      - kraken_backend
 
 networks:
-  kraken:
+  kraken_backend:
     external: true
 
     
