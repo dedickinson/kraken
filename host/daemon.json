@@ -1,7 +1,0 @@
-{
-    "tls": true,
-    "tlsverify": true,
-    "tlscacert": "/root/ca/intermediate/certs/ca-chain.cert.pem",
-    "tlscert": "/root/ca/intermediate/certs/docker.kraken.local.cert.pem",
-    "tlskey": "/root/ca/intermediate/private/docker.kraken.local.key.pem"
-}
