@@ -1,0 +1,76 @@
+version: '3.7'
+
+services:  
+  consul:
+    image: dedickinson/hub-infra-consul
+    command: 
+      - agent 
+      - -server
+      - -bind=${EXTIP:?err}
+      - -client=${EXTIP:?err}
+      - -dns-port=${CONSUL_DNS_PORT:?err}
+      - -recursor=${DNS_RECURSOR:?err}
+      - -bootstrap-expect=${CONSUL_BOOTSTRAP_EXPECT:?err}
+      - -http-port=${CONSUL_HTTP_PORT:?err}
+      - -encrypt=${CONSUL_ENCRYPT_KEY:?err}
+
+    environment:
+      CONSUL_ALLOW_PRIVILEGED_PORTS: 
+
+    volumes:
+      - ${VOLUME_STORE:?err}/hub-infra-consul:/consul/data
+    
+    network_mode: "host"
+
+  ldap:
+    image: dedickinson/hub-infra-ldap
+
+    environment:
+      LDAP_ORGANISATION: ${LDAP_ORGANISATION:?err}
+      LDAP_DOMAIN: ${LDAP_DOMAIN:?err}
+
+    volumes:
+      - ${VOLUME_STORE:?err}/hub-infra-ldap-data:/var/lib/ldap
+      - ${VOLUME_STORE:?err}/hub-infra-ldap-slapd:/etc/ldap/slapd.d
+    
+    ports:
+      - "${LDAP_PORT_SECURE:?err}:636"
+    
+    networks:
+      - kraken_public
+      - kraken_private
+
+  vault:
+    image: dedickinson/hub-infra-vault
+
+    cap_add:
+      - IPC_LOCK
+
+    volumes:
+      - ${VOLUME_STORE:?err}/hub-infra-vault-data:/vault/file
+      - ${VOLUME_STORE:?err}/hub-infra-vault-logs:/vault/logs
+    
+    ports:
+      - "${VAULT_PORT:?err}:8200"
+
+    networks:
+      - kraken_public
+      - kraken_private
+
+  postgres:
+    image: dedickinson/hub-db-postgres
+
+    volumes:
+      - ${VOLUME_STORE:?err}/hub-db-postgres:/var/lib/postgresql/data
+    
+    ports:
+      - "${POSTGRES_PORT:?err}:5432"
+
+    networks:
+      - kraken_private
+  
+networks:
+  kraken_public: {}
+  kraken_private: {}
+
+volumes: {}
